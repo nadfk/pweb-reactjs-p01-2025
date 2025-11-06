@@ -1,0 +1,24 @@
+# ==============================
+# Global Ignored Files (Root)
+# ==============================
+
+# Dependencies / Cache (Jika ada yang terinstal di root secara tidak sengaja)
+/node_modules
+/dist
+/build
+/temp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+# Penting untuk memastikan .env di root atau di subfolder terabaikan
+.env
+.env.local 
+.env.*.local
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp

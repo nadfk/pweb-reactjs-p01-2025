@@ -1,0 +1,12 @@
+# dependencies
+/node_modules
+
+# build/compiled output
+/dist
+
+# misc
+.DS_Store
+
+# local env files (sudah ada di file Anda)
+.env*.local
+.env
