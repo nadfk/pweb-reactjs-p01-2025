@@ -2,11 +2,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import React from "react";
 import Button from "./Button";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/CartContext"; // --- 1. IMPORT CART CONTEXT ---
 
 export default function Navbar() {
   const { email, token, logout } = useAuth();
-  const { itemCount } = useCart();
+  const { itemCount } = useCart(); // --- 2. GET ITEM COUNT ---
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -15,14 +15,11 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-md shadow-lg border-b border-white/40">
+    <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo / Brand */}
-          <Link
-            to="/books"
-            className="text-xl font-bold bg-gradient-to-r from-cold-600 to-cold-800 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-          >
+          <Link to="/books" className="text-xl font-bold text-blue-600">
             IT Literature Shop
           </Link>
 
@@ -31,38 +28,30 @@ export default function Navbar() {
             <div className="flex items-center gap-6">
               <Link
                 to="/books"
-                className="text-cold-700 hover:text-cold-900 transition-colors relative group"
+                className="text-gray-700 hover:text-blue-600 transition-colors"
               >
-                <span className="relative">
-                  Books
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cold-500 transition-all duration-300 group-hover:w-full"></span>
-                </span>
+                Books
               </Link>
               <Link
                 to="/transactions"
-                className="flex items-center text-cold-700 hover:text-cold-900 transition-colors relative group"
+                className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
               >
-                <span className="relative">
-                  Transactions
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cold-500 transition-all duration-300 group-hover:w-full"></span>
-                </span>
+                Transactions
+                {/* --- 3. TAMBAHKAN BADGE JUMLAH ITEM --- */}
                 {itemCount > 0 && (
-                  <span className="ml-1.5 bg-cold-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-sm">
+                  <span className="ml-1.5 bg-blue-600 text-white text-xs font-bold rounded-full px-2 py-0.5">
                     {itemCount}
                   </span>
                 )}
+                {/* ------------------------------------- */}
               </Link>
 
               {/* User Info & Logout */}
-              <div className="flex items-center gap-4 ml-4 pl-4 border-l border-cold-200/50">
+              <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-300">
                 {email && (
-                  <span className="text-sm text-cold-600 font-medium">{email}</span>
+                  <span className="text-sm text-gray-600">{email}</span>
                 )}
-                <Button
-                  variant="secondary"
-                  onClick={handleLogout}
-                  className="px-4 py-1.5 text-sm font-medium text-cold-600 hover:text-cold-800 bg-cold-100/50 hover:bg-cold-200/50 rounded-lg transition-all duration-300"
-                >
+                <Button variant="secondary" onClick={handleLogout}>
                   Logout
                 </Button>
               </div>
@@ -71,10 +60,7 @@ export default function Navbar() {
 
           {/* Login link when not authenticated */}
           {!token && (
-            <Link
-              to="/login"
-              className="px-4 py-1.5 text-sm font-medium text-cold-600 hover:text-cold-800 bg-cold-100/50 hover:bg-cold-200/50 rounded-lg transition-all duration-300"
-            >
+            <Link to="/login" className="text-blue-600 hover:text-blue-700">
               Login
             </Link>
           )}
