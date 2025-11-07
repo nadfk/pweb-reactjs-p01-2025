@@ -4,6 +4,9 @@ import { bookAPI } from "../services/api";
 import React from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import {
+  useCart
+} from "../context/CartContext";
 
 interface Book {
   id: string;
@@ -34,7 +37,9 @@ export default function BooksList() {
   const [searchInput, setSearchInput] = useState("");
   const [orderByTitle, setOrderByTitle] = useState("");
   const [orderByPublishDate, setOrderByPublishDate] = useState("");
-  const [meta, setMeta] = useState<Meta | null>(null); // Menggunakan interface Meta
+  const [meta, setMeta] = useState<Meta | null>(null);
+
+  const { addToCart } = useCart(); // --- 2. GET CART FUNCTION ---
 
   const fetchBooks = async () => {
     setLoading(true);
@@ -83,7 +88,7 @@ export default function BooksList() {
   if (loading && books.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600">Loading books...</p>
+        <p className="text-center text-cold-600 animate-pulse">Loading books...</p>
       </div>
     );
   }
@@ -91,7 +96,7 @@ export default function BooksList() {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-red-100 text-red-700 p-4 rounded">
+        <div className="bg-red-100/80 backdrop-blur-sm text-red-700 p-4 rounded-lg border border-red-200">
           Error: {error}
         </div>
       </div>
@@ -99,115 +104,76 @@ export default function BooksList() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Books</h1>
-        <Link to="/books/add">
-          <Button>Add New Book</Button>
-        </Link>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Search and Filter Card */}
+      <div className="bg-white/30 backdrop-blur-sm border border-white/40 rounded-xl p-6 mb-8 shadow-lg">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <Input 
+            type="search"
+            placeholder="Search books..."
+            className="w-full sm:w-64 bg-white/50 backdrop-blur-sm border border-white/40 rounded-lg"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+          <div className="flex flex-wrap gap-4">
+            <select
+              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-lg px-4 py-2 text-gray-800"
+              value={orderByTitle}
+              onChange={(e) => setOrderByTitle(e.target.value)}
+            >
+              <option value="">Sort by Title</option>
+              <option value="asc">Title A-Z</option>
+              <option value="desc">Title Z-A</option>
+            </select>
 
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <Input
-              placeholder="Search by title or writer..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
+            <select
+              className="bg-white/50 backdrop-blur-sm border border-white/40 rounded-lg px-4 py-2 text-gray-800"
+              value={orderByPublishDate}
+              onChange={(e) => setOrderByPublishDate(e.target.value)}
+            >
+              <option value="">Sort by Year</option>
+              <option value="asc">Oldest First</option>
+              <option value="desc">Newest First</option>
+            </select>
+
+            <Button 
+              className="bg-blue-500/80 hover:bg-blue-600/80 text-white px-6 py-2 rounded-lg transition-all duration-300"
+              onClick={handleSearch}
+            >
+              Search
+            </Button>
           </div>
-
-          <select
-            className="px-3 py-2 border border-gray-300 rounded-lg"
-            value={orderByTitle}
-            onChange={(e) => {
-              setOrderByTitle(e.target.value);
-            }}
-          >
-            <option value="">Sort by Title</option>
-            <option value="asc">Title A-Z</option>
-            <option value="desc">Title Z-A</option>
-          </select>
-
-          <select
-            className="px-3 py-2 border border-gray-300 rounded-lg"
-            value={orderByPublishDate}
-            onChange={(e) => {
-              setOrderByPublishDate(e.target.value);
-            }}
-          >
-            <option value="">Sort by Year</option>
-            <option value="asc">Oldest First</option>
-            <option value="desc">Newest First</option>
-          </select>
-        </div>
-
-        <div className="flex gap-2 mt-4">
-          <Button onClick={handleSearch}>Search</Button>
-          <Button variant="secondary" onClick={handleResetFilters}>
-            Reset Filters
-          </Button>
         </div>
       </div>
 
-      {books.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No books found</p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {books.map((book) => (
-              <div
-                key={book.id}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6"
+      {/* Books Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {books.map((book) => (
+          <div
+            key={book.id}
+            className="bg-white/30 backdrop-blur-sm border border-white/40 rounded-xl p-6 hover:shadow-xl transition-all duration-300"
+          >
+            <h3 className="font-bold text-gray-800 text-lg mb-2">{book.title}</h3>
+            <div className="space-y-2 text-sm text-gray-600 mb-4">
+              <p>Writer: {book.writer}</p>
+              <p>Publisher: {book.publisher}</p>
+              <p>Genre: {book.genre}</p>
+              <p>Stock: {book.stock_quantity}</p>
+            </div>
+            <div className="flex justify-between items-center pt-4 border-t border-white/40">
+              <span className="text-gray-800 font-bold">${book.price}</span>
+              <Button 
+                className="bg-blue-500/80 hover:bg-blue-600/80 text-white px-4 py-1.5 rounded-lg text-sm transition-all duration-300 disabled:opacity-50"
+                onClick={() => addToCart(book, 1)} 
+                disabled={book.stock_quantity === 0}
               >
-                <h3 className="text-xl font-bold mb-2">{book.title}</h3>
-                <p className="text-gray-600 mb-1">by {book.writer}</p>
-                <p className="text-sm text-gray-500 mb-2">{book.publisher}</p>
-                <p className="text-sm text-blue-600 mb-2">{book.genre}</p>
-                <div className="flex justify-between items-center mt-4">
-                  <span className="text-lg font-bold text-green-600">
-                    ${book.price.toFixed(2)}
-                  </span>
-                  <span className="text-sm text-gray-600">
-                    Stock: {book.stock_quantity}
-                  </span>
-                </div>
-                <Link to={`/books/${book.id}`}>
-                  <Button variant="secondary" fullWidth className="mt-4">
-                    View Details
-                  </Button>
-                </Link>
-              </div>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {meta && meta.total > 0 && (
-            <div className="flex justify-center items-center gap-4 mt-8">
-              <Button
-                onClick={() => setPage(page - 1)}
-                disabled={!meta.prev_page}
-                variant="secondary"
-              >
-                Previous
-              </Button>
-              <span className="text-gray-700">
-                Page {meta.page} of {Math.ceil(meta.total / meta.limit)}
-              </span>
-              <Button
-                onClick={() => setPage(page + 1)}
-                disabled={!meta.next_page}
-                variant="secondary"
-              >
-                Next
+                {book.stock_quantity > 0 ? "Add to Cart" : "Out of Stock"}
               </Button>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

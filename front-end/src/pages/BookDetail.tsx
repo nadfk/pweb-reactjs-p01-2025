@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { bookAPI } from "../services/api";
 import React from "react";
 import Button from "../components/Button";
+import { useCart } from "../context/CartContext"; // --- 1. IMPORT CART CONTEXT ---
 
 interface BookDetail {
   id: string;
@@ -24,6 +25,8 @@ export default function BookDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
+
+  const { addToCart } = useCart(); // --- 2. GET CART FUNCTION ---
 
   useEffect(() => {
     fetchBook();
@@ -102,6 +105,7 @@ export default function BookDetail() {
           </Button>
         </div>
 
+        {/* ... (DetailRow - tidak berubah) ... */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <DetailRow label="Writer" value={book.writer} />
@@ -119,6 +123,7 @@ export default function BookDetail() {
           </div>
         </div>
 
+        {/* ... (Description - tidak berubah) ... */}
         {book.description && (
           <div className="mt-6">
             <h3 className="font-semibold text-lg mb-2">Description</h3>
@@ -126,11 +131,24 @@ export default function BookDetail() {
           </div>
         )}
 
-        <div className="mt-8 flex gap-4">
+        {/* --- 3. MODIFIKASI BAGIAN TOMBOL --- */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <Button
+            fullWidth
+            onClick={() => addToCart(book, 1)}
+            disabled={book.stock_quantity === 0}
+            className="flex-1"
+          >
+            {book.stock_quantity > 0 ? "Add to Cart" : "Out of Stock"}
+          </Button>
           <Link to={`/books/edit/${book.id}`} className="flex-1">
-            <Button fullWidth>Edit Book</Button>
+            <Button fullWidth variant="secondary">
+              Edit Book
+            </Button>
           </Link>
         </div>
+        {/* ---------------------------------- */}
+
       </div>
     </div>
   );
